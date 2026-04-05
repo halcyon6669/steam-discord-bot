@@ -22,26 +22,6 @@ jobs:
       - name: Run price check
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-        run: |
-          python -c "
-          import asyncio
-          from src.database import Database
-          from src.steam_crawler import SteamCrawler
-          from src.scheduler import PriceChecker
-          from src.config import Config
-          from telegram import Bot
-
-          async def check():
-              config = Config.from_env()
-              db = Database(config.database_path)
-              await db.connect()
-              crawler = SteamCrawler(rate_limit_delay=config.rate_limit_delay)
-              
-              bot = Bot(token=config.telegram_token)
-              
-              checker = PriceChecker(bot, db, crawler)
-              await checker.check_all_games()
-              await db.close()
-
-          asyncio.run(check())
-          "
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WATCH_LIST: ${{ secrets.WATCH_LIST }}
+        run: python main.py

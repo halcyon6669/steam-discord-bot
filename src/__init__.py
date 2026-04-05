@@ -1,0 +1,1 @@
+"""Steam Discord Bot package."""

@@ -1,0 +1,47 @@
+name: Check Steam Prices
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  check-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run price check
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        run: |
+          python -c "
+          import asyncio
+          from src.database import Database
+          from src.steam_crawler import SteamCrawler
+          from src.scheduler import PriceChecker
+          from src.config import Config
+          from telegram import Bot
+
+          async def check():
+              config = Config.from_env()
+              db = Database(config.database_path)
+              await db.connect()
+              crawler = SteamCrawler(rate_limit_delay=config.rate_limit_delay)
+              
+              bot = Bot(token=config.telegram_token)
+              
+              checker = PriceChecker(bot, db, crawler)
+              await checker.check_all_games()
+              await db.close()
+
+          asyncio.run(check())
+          "

@@ -12,8 +12,8 @@ load_dotenv()
 @dataclass
 class Config:
     telegram_token: str
+    telegram_chat_id: int
     database_path: Path
-    check_interval_hours: int
     rate_limit_delay: float
 
     @classmethod
@@ -23,14 +23,18 @@ class Config:
             msg = "TELEGRAM_TOKEN environment variable is required"
             raise ValueError(msg)
 
+        chat_id = os.getenv("TELEGRAM_CHAT_ID")
+        if not chat_id:
+            msg = "TELEGRAM_CHAT_ID environment variable is required"
+            raise ValueError(msg)
+
         db_path = os.getenv("DATABASE_PATH", "./data/bot.db")
-        check_interval = int(os.getenv("CHECK_INTERVAL_HOURS", "6"))
         rate_limit = float(os.getenv("RATE_LIMIT_DELAY", "1.0"))
 
         return cls(
             telegram_token=token,
+            telegram_chat_id=int(chat_id),
             database_path=Path(db_path),
-            check_interval_hours=check_interval,
             rate_limit_delay=rate_limit,
         )
 
